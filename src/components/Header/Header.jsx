@@ -12,13 +12,13 @@ import Menu from "@material-ui/icons/Menu";
 // core components
 import HeaderLinks from "./HeaderLinks.jsx";
 import Button from "components/CustomButtons/Button.jsx";
-
 import headerStyle from "assets/jss/material-dashboard-react/components/headerStyle.jsx";
 
 function Header({ ...props }) {
+  let thisName = props.nameThis;
   function makeBrand() {
     var name;
-    props.routes.map((prop, key) => {
+    props.routes.map(prop => {
       if (prop.path === props.location.pathname) {
         name = prop.navbarName;
       }
@@ -35,10 +35,16 @@ function Header({ ...props }) {
       <Toolbar className={classes.container}>
         <div className={classes.flex}>
           {/* Here we create navbar brand, based on route name */}
-          <Button color="transparent" href="#" className={classes.title}>
-            {makeBrand()}
+          <Button
+            type="button"
+            color="transparent"
+            href="#"
+            className={classes.title}
+          >
+            <p>{makeBrand()}</p>
           </Button>
         </div>
+        <p>{thisName}</p>
         <Hidden smDown implementation="css">
           <HeaderLinks />
         </Hidden>

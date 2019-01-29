@@ -1,5 +1,6 @@
 /* eslint-disable */
 import React from "react";
+import { connect } from "react-redux";
 import PropTypes from "prop-types";
 import { Switch, Route, Redirect } from "react-router-dom";
 // creates a beautiful scrollbar
@@ -13,21 +14,22 @@ import Footer from "components/Footer/Footer.jsx";
 import Sidebar from "components/Sidebar/Sidebar.jsx";
 
 import dashboardRoutes from "routes/dashboard.jsx";
+import dashboardRoutesAuth from "routes/dashboardAUTH.jsx"
 
 import dashboardStyle from "assets/jss/material-dashboard-react/layouts/dashboardStyle.jsx";
 
 import image from "assets/img/sidebar-2.jpg";
 import logo from "assets/img/reactlogo.png";
 
-const switchRoutes = (
-  <Switch>
-    {dashboardRoutes.map((prop, key) => {
-      if (prop.redirect)
-        return <Redirect from={prop.path} to={prop.to} key={key} />;
-      return <Route path={prop.path} component={prop.component} key={key} />;
-    })}
-  </Switch>
-);
+// const switchRoutes = (
+//   <Switch>
+//     {dashboardRoutes.map((prop, key) => {
+//       if (prop.redirect)
+//         return <Redirect from={prop.path} to={prop.to} key={key} />;
+//       return <Route path={prop.path} component={prop.component} key={key} />;
+//     })}
+//   </Switch>
+// );
 
 class App extends React.Component {
   constructor(props) {
@@ -66,11 +68,27 @@ class App extends React.Component {
     window.removeEventListener("resize", this.resizeFunction);
   }
   render() {
+const switchRoutes =
+      <Switch>
+        {(this.props.Authorization.authBool === true)
+          ? dashboardRoutes.map((prop, key) => {
+
+          if (prop.redirect)
+            return <Redirect from={prop.path} to={prop.to} key={key} />;
+          return <Route path={prop.path} component={prop.component} key={key} />;
+        })
+           : dashboardRoutesAuth.map((prop, key) => {
+
+          if (prop.redirect)
+            return <Redirect from={prop.path} to={prop.to} key={key} />;
+          return <Route path={prop.path} component={prop.component} key={key} />;
+        })}
+      </Switch>
     const { classes, ...rest } = this.props;
     return (
       <div className={classes.wrapper}>
         <Sidebar
-          routes={dashboardRoutes}
+          routes={(this.props.Authorization.authBool === true)?dashboardRoutes:dashboardRoutesAuth}
           logoText={"Creative Tim"}
           logo={logo}
           image={image}
@@ -81,9 +99,10 @@ class App extends React.Component {
         />
         <div className={classes.mainPanel} ref="mainPanel">
           <Header
-            routes={dashboardRoutes}
+            routes={(this.props.Authorization.authBool === true)?dashboardRoutes:dashboardRoutesAuth}
             handleDrawerToggle={this.handleDrawerToggle}
             {...rest}
+            nameThis={this.props.Authorization.authEmail}
           />
           {/* On the /maps route we want the map to be on full screen - this is not possible if the content and conatiner classes are present because they have some paddings which would make the map smaller */}
           {this.getRoute() ? (
@@ -104,4 +123,8 @@ App.propTypes = {
   classes: PropTypes.object.isRequired
 };
 
-export default withStyles(dashboardStyle)(App);
+    export default connect(
+  state => ({
+    Authorization:state[3]
+  })
+)(withStyles(dashboardStyle)(App))

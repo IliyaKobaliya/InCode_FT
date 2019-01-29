@@ -1,11 +1,9 @@
-import React from "react";
-import ReactDOM from 'react-dom';
-// import Calendar from 'react-calendar-material';
+import React, { Fragment } from "react";
 import PropTypes from "prop-types";
-import ChartistGraph from "react-chartist";
-import withStyles from "@material-ui/core/styles/withStyles";
 import { connect } from "react-redux";
-import 'react-infinite-calendar/styles.css';
+import Button from "components/CustomButtons/Button.jsx";
+import "react-infinite-calendar/styles.css";
+import { withRouter } from "react-router";
 import InfiniteCalendar, {
   Calendar,
   defaultMultipleDateInterpolation,
@@ -19,6 +17,7 @@ const lastWeek = new Date(
   today.getMonth(),
   today.getDate() - 7
 );
+
 class Dashboard extends React.Component {
   state = {
     value: 0
@@ -26,82 +25,86 @@ class Dashboard extends React.Component {
   handleChange = (event, value) => {
     this.setState({ value });
   };
-
   handleChangeIndex = index => {
     this.setState({ value: index });
   };
 
-  getDate = event => {
-    const date = event.target;
-    console.log(date.data("date"));
-  }
-
-
-
-
-
-
-
-  selectedDay = (val) => {
-    let storeArr = this.props.Store;
+  selectedDay = val => {
     let thisObj = null;
-    for(let i = 0; i < storeArr.length; i++) {
-  let date = val;
-      if (`${Object.keys(storeArr[i])}` === `${date}`) {
-        thisObj = storeArr[i];
-  }
-  }
+    let date = `${val}`;
+    this.props.Store.map(item => {
+      if (Object.keys(item)[0] === date) {
+        thisObj = item[Object.keys(item)[0]];
+        this.props.editeWorkout(
+          thisObj,
+          this.props.exercisesStore,
+          this.props.Store,
+          this.props.Authorization
+        );
+      }
+      return true;
+    });
     if (thisObj === null) {
-      // console.log(thisObj);
-      thisObj = new Object();
+      thisObj = {};
       let thisKey = `${val}`;
       thisObj[thisKey] = {};
-      console.log(thisObj);
-      return this.props.history.push(`/NewWorkout`);
+      this.props.history.push(`/NewWorkout/${val}`);
     } else {
-      console.log(thisObj);
-      return this.props.history.push(`/EditWorkout`);
+      this.props.history.push(`/EditWorkout/${val}`);
     }
-  }
-
-
-
+  };
   render() {
+    this.days = this.props.Store.map(item => {
+      return new Date(Object.keys(item));
+    });
     return (
-      <InfiniteCalendar
-            Component={MultipleDatesCalendar}
-         width={500}
-         height={600}
-        // selected={}
-         disabledDays={[0,6]}
-         minDate={lastWeek}
-        onSelect={this.selectedDay}
+      <Fragment>
+        <Button
+          type="button"
+          color="primary"
+          onClick={() => {
+            this.props.history.push("/NewExercise");
+          }}
+        >
+          ADD EXERCISE
+        </Button>
 
-    interpolateSelection={defaultMultipleDateInterpolation}
-    selected={[new Date(2019, 0, 24), new Date(2019, 0, 29), new Date()]}
-       />
-    )
+        <InfiniteCalendar
+          Component={MultipleDatesCalendar}
+          width={500}
+          height={600}
+          disabledDays={[0, 6]}
+          minDate={lastWeek}
+          onSelect={this.selectedDay}
+          interpolateSelection={defaultMultipleDateInterpolation}
+          selected={[...this.days]}
+        />
+      </Fragment>
+    );
   }
 }
+Dashboard.propTypes = {
+  Store: PropTypes.array,
+  exercisesStore: PropTypes.array,
+  allStore: PropTypes.array,
+  Authorization: PropTypes.object,
+  editeWorkout: PropTypes.func
+};
+const DashboardRouter = withRouter(Dashboard);
+
 export default connect(
   state => ({
-    Store: state[1][0]
+    Store: state[1],
+    exercisesStore: state[0],
+    allStore: state,
+    Authorization: state[3]
   }),
   action => ({
-    getNewExercise: (name, store,measurement) => {
+    editeWorkout: (item, exercises, workouts, authorization) => {
       action({
-        type: "addExercise",
-        payload: [
-          ...store,
-          {
-            name: name,
-            position: store.length + 1,
-            isShow: true,
-            key: store.length + 1,
-            value:measurement
-          }
-        ]
+        type: "editeWorkout",
+        payload: [exercises, workouts, item, authorization]
       });
     }
   })
-)(Dashboard)
+)(DashboardRouter);

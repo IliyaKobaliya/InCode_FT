@@ -1,0 +1,16 @@
+.containerInput{
+  display: flex;
+  /* align-items: center;
+  justify-content: center; */
+  flex-direction: column;
+}
+.inputLabel{
+  text-align: center;
+  font-size: 18px;
+}
+input{
+  padding-left: 100px ;
+}
+.MuiFormControl-root-337{
+  margin: 0
+}
